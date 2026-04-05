@@ -1,0 +1,55 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13
+    restart: unless-stopped
+    expose:
+      - "5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: webapp/api.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
+      RPC_QUEUE: ${RPC_QUEUE:-wordle_suggest}
+      RPC_TIMEOUT_SECONDS: ${RPC_TIMEOUT_SECONDS:-8}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8000"
+    volumes:
+      - ../data:/opt/wordle/data:ro
+      - ../runs:/opt/wordle/runs:ro
+      - ../env:/opt/wordle/env:ro
+
+  worker:
+    build:
+      context: ..
+      dockerfile: webapp/worker.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
+      RPC_QUEUE: ${RPC_QUEUE:-wordle_suggest}
+      MODEL_PATH: ${MODEL_PATH:-/opt/wordle/runs/ppo/best_model/best_model.zip}
+      DATA_DIR: ${DATA_DIR:-/opt/wordle/data}
+      MAX_TURNS: ${MAX_TURNS:-6}
+      TOP_K_DEFAULT: ${TOP_K_DEFAULT:-10}
+      TOP_K_MAX: ${TOP_K_MAX:-25}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ../data:/opt/wordle/data:ro
+      - ../runs:/opt/wordle/runs:ro
+      - ../env:/opt/wordle/env:ro
