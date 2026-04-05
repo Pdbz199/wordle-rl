@@ -21,3 +21,8 @@ runs/
 
 # Python cache
 **/__pycache__/
+
+# Webapp local config
+webapp/.env
+webapp/.env.integration
+webapp/.env.test

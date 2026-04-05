@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wordle RL Assistant</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1>Wordle RL Assistant</h1>
+          <button
+            class="info-dot"
+            type="button"
+            data-tooltip="Type letters, click tile colors to match Wordle feedback, then press Enter."
+            aria-label="How to use"
+          >
+            i
+          </button>
+        </div>
+        <div id="topbar-actions" class="topbar-right hidden">
+          <button id="logout-btn" class="ghost" type="button">Log Out</button>
+        </div>
+      </header>
+
+      <section id="login-card" class="login-card">
+        <h2>Sign In</h2>
+        <form id="login-form" class="stack">
+          <label>
+            Username
+            <input id="username" type="text" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input id="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button type="submit">Log In</button>
+        </form>
+      </section>
+
+      <section id="assistant-card" class="assistant hidden">
+        <div class="game-shell">
+          <section class="game-center">
+            <div id="board" class="board" aria-label="Wordle board"></div>
+
+            <div class="keyboard" aria-label="On-screen keyboard">
+              <div class="keyboard-row keyboard-row--top">
+                <button class="key-btn" type="button" data-key="q">Q</button>
+                <button class="key-btn" type="button" data-key="w">W</button>
+                <button class="key-btn" type="button" data-key="e">E</button>
+                <button class="key-btn" type="button" data-key="r">R</button>
+                <button class="key-btn" type="button" data-key="t">T</button>
+                <button class="key-btn" type="button" data-key="y">Y</button>
+                <button class="key-btn" type="button" data-key="u">U</button>
+                <button class="key-btn" type="button" data-key="i">I</button>
+                <button class="key-btn" type="button" data-key="o">O</button>
+                <button class="key-btn" type="button" data-key="p">P</button>
+              </div>
+              <div class="keyboard-row keyboard-row--middle">
+                <button class="key-btn" type="button" data-key="a">A</button>
+                <button class="key-btn" type="button" data-key="s">S</button>
+                <button class="key-btn" type="button" data-key="d">D</button>
+                <button class="key-btn" type="button" data-key="f">F</button>
+                <button class="key-btn" type="button" data-key="g">G</button>
+                <button class="key-btn" type="button" data-key="h">H</button>
+                <button class="key-btn" type="button" data-key="j">J</button>
+                <button class="key-btn" type="button" data-key="k">K</button>
+                <button class="key-btn" type="button" data-key="l">L</button>
+              </div>
+              <div class="keyboard-row keyboard-row--bottom">
+                <button class="key-btn key-btn-wide" type="button" data-key="enter">ENTER</button>
+                <button class="key-btn" type="button" data-key="z">Z</button>
+                <button class="key-btn" type="button" data-key="x">X</button>
+                <button class="key-btn" type="button" data-key="c">C</button>
+                <button class="key-btn" type="button" data-key="v">V</button>
+                <button class="key-btn" type="button" data-key="b">B</button>
+                <button class="key-btn" type="button" data-key="n">N</button>
+                <button class="key-btn" type="button" data-key="m">M</button>
+                <button class="key-btn key-btn-wide key-btn-icon" type="button" data-key="backspace" aria-label="Backspace">
+                  &#9003;
+                </button>
+              </div>
+            </div>
+
+            <p id="message" class="message"></p>
+          </section>
+
+          <aside class="assistant-panel">
+            <section class="panel-section panel-section-stats">
+              <article class="stat-card">
+                <h3>Next</h3>
+                <p id="next-guess" class="stat-value">-</p>
+              </article>
+              <article class="stat-card">
+                <h3>Candidates</h3>
+                <p id="candidate-count" class="stat-value">-</p>
+              </article>
+              <article class="stat-card">
+                <h3>Turn</h3>
+                <p id="turn-count" class="stat-value">-</p>
+              </article>
+            </section>
+
+            <section class="panel-section panel-section-controls">
+              <h3>
+                Controls
+                <button
+                  class="info-dot"
+                  type="button"
+                  data-tooltip="Enter and Backspace work from your keyboard. Use fallback pattern only if needed."
+                  aria-label="Controls help"
+                >
+                  i
+                </button>
+              </h3>
+              <div class="panel-buttons">
+                <button id="use-suggestion-btn" class="ghost" type="button">Use Suggestion</button>
+                <button id="undo-btn" class="ghost" type="button">Undo</button>
+                <button id="reset-btn" class="ghost" type="button">New</button>
+              </div>
+              <label class="pattern-label" for="pattern-fallback">
+                Pattern (fallback)
+                <button
+                  class="info-dot"
+                  type="button"
+                  data-tooltip="b=gray, y=yellow, g=green. Example: gybbg"
+                  aria-label="Pattern help"
+                >
+                  i
+                </button>
+              </label>
+              <div class="pattern-row">
+                <input id="pattern-fallback" type="text" maxlength="5" autocomplete="off" placeholder="bbbbb" />
+                <button id="submit-turn-btn" type="button">Submit</button>
+              </div>
+            </section>
+
+            <section class="panel-section panel-section-legend">
+              <h3>
+                Colors
+                <button
+                  class="info-dot"
+                  type="button"
+                  data-tooltip="Set tiles to match Wordle feedback for the guess you actually used."
+                  aria-label="Legend help"
+                >
+                  i
+                </button>
+              </h3>
+              <p><span class="legend-chip chip-correct"></span> Green = correct spot</p>
+              <p><span class="legend-chip chip-present"></span> Yellow = in word, wrong spot</p>
+              <p><span class="legend-chip chip-absent"></span> Gray = not in word</p>
+            </section>
+
+            <section class="panel-section panel-section-choices">
+              <h3>Top Choices</h3>
+              <div id="top-choices-cards" class="choice-list"></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

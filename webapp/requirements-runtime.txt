@@ -1,0 +1,8 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy==2.1.2
+gymnasium==1.2.3
+stable_baselines3==2.8.0
+sb3-contrib==2.8.0
+torch==2.11.0+cpu
+torchaudio==2.11.0+cpu
+torchvision==0.26.0+cpu
