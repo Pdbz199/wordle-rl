@@ -1,0 +1,23 @@
+# Environments
+.venv/
+venv/
+
+# Python cache/build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Saved Models
+*.zip
+
+# Logs
+wordle_tensorboard/
+runs/
+
+# IDE files
+.idea/
+.vscode/
+
+# Python cache
+**/__pycache__/
